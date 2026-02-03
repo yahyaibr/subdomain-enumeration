@@ -46,6 +46,3 @@ The tool gathers subdomains from multiple independent sources to improve coverag
 ### Important note
 
 This tool is intended for **ethical and legal security testing only**. Always ensure you have proper authorization before scanning or collecting information about a domain.
-*
-* Add a **tool banner description**
-* Or explain the code **line by line**
