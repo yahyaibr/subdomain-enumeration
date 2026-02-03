@@ -1,0 +1,96 @@
+# Subdomain Enumeration Tool – Documentation
+
+## Overview
+
+`subdomain.py` is a Python-based subdomain enumeration tool. It collects subdomains of a given domain from multiple OSINT sources. Useful for:
+
+* Security research
+* Bug bounty reconnaissance
+* Mapping an organization’s attack surface
+* Learning OSINT techniques
+
+**Sources used:** crt.sh, VirusTotal, SecurityTrails, TLS BufferOver, AlienVault OTX, ThreatCrowd.
+
+---
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yahyaibr/subdomain-enumeration.git
+cd subdomain-enumeration
+```
+
+2. Install dependencies:
+
+```bash
+pip install requests
+```
+
+---
+
+## API Keys
+
+Some data sources require **your own API keys**. Add them in the script before running:
+
+| Source         | API Key Variable  | Required?  |
+| -------------- | ----------------- | ---------- |
+| VirusTotal     | `'x-apikey'`      | ✅ Yes      |
+| AlienVault OTX | `'X-OTX-API-KEY'` | ✅ Yes      |
+| SecurityTrails | `'APIKEY'`        | ✅ Yes      |
+| TLS BufferOver | `'x-api-key'`     | ✅ Yes      |
+
+**Example in `subdomain.py`:**
+
+```python
+headers = {
+    'x-apikey': 'YOUR_API_KEY_HERE'
+}
+```
+
+> **Important:** Replace `YOUR_API_KEY_HERE` with your actual key. Do **not** commit real keys to GitHub.
+
+---
+
+## Usage
+
+Run the script:
+
+```bash
+python3 subdomain.py
+```
+
+Enter a domain when prompted:
+
+```
+Please enter a domain:
+> example.com
+[+] Checking subdomains activity...
+```
+
+After a few seconds, the script outputs subdomains:
+
+```
+[+] Subdomains found:
+ └─ blog.example.com
+ └─ mail.example.com
+ └─ dev.example.com
+```
+
+---
+
+## How It Works
+
+* Queries multiple sources (crt.sh, VirusTotal, SecurityTrails, TLS BufferOver, OTX, ThreatCrowd)
+* Normalizes and deduplicates results
+* Outputs a clean, sorted list of subdomains
+
+---
+
+## Notes
+
+* Only use on domains you **own** or have **permission** to test.
+* API keys are mandatory for some services to get full results.
+* ThreatCrowd and crt.sh do **not** require keys.
+
