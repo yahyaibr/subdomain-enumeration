@@ -11,13 +11,11 @@ Usage:
     python subdomain_tool.py example.com -o results.txt
     python subdomain_tool.py example.com --timeout 15 --workers 6
 
-API keys (optional — sources that need one are skipped if the key is missing):
+API keys (optional ):
     export OTX_API_KEY="..."
     export VT_API_KEY="..."
     export SECURITYTRAILS_API_KEY="..."
 
-Never hardcode API keys in source code — that's how they end up leaked in
-git history, pastebins, or shared scripts like this one originally had.
 """
 
 import argparse
