@@ -32,7 +32,7 @@ pip install requests
 ## Setup
 
 Get free API keys from whichever paid sources you want to use, then export
-them as environment variables (never hardcode keys in the script):
+them as environment variables:
 
 ```bash
 export OTX_API_KEY="your_otx_key"
