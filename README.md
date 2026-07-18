@@ -1,48 +1,97 @@
-## Subdomain Enumeration Tool – Description
+# Subdomain Tool
 
-This tool is a **subdomain enumeration and reconnaissance script** written in Python. It is designed to collect and aggregate subdomains of a given domain from multiple public threat-intelligence and OSINT sources. The main goal is to help **security researchers, penetration testers, and students** identify exposed or forgotten subdomains that may increase an organization’s attack surface.
+A command-line OSINT utility that discovers subdomains for a given domain by
+querying multiple public passive-DNS and certificate-transparency sources in
+parallel, then merges and deduplicates the results.
 
-### What the tool does
+## Sources used
 
-* Prompts the user to enter a target domain
-* Queries several well-known security and intelligence platforms
-* Collects subdomains from each source
-* Normalizes and deduplicates results
-* Outputs a clean, sorted list of discovered subdomains
+| Source | API key required? |
+|---|---|
+| [crt.sh](https://crt.sh) (certificate transparency logs) | No |
+| [AlienVault OTX](https://otx.alienvault.com) (passive DNS) | Yes — `OTX_API_KEY` |
+| [VirusTotal](https://www.virustotal.com) (subdomains) | Yes — `VT_API_KEY` |
+| [SecurityTrails](https://securitytrails.com) (subdomains) | Yes — `SECURITYTRAILS_API_KEY` |
+| [ThreatCrowd](https://threatcrowd.org) | No |
+| [BufferOver](https://tls.bufferover.run) (TLS/DNS) | No |
 
-### Data sources used
+Sources that need a key are skipped automatically if that key isn't set —
+the tool still runs fine with just crt.sh, ThreatCrowd, and BufferOver.
 
-The tool gathers subdomains from multiple independent sources to improve coverage and accuracy:
+## Requirements
 
-* **crt.sh** – Extracts subdomains from Certificate Transparency logs
-* **AlienVault OTX** – Uses passive DNS records
-* **VirusTotal** – Fetches known subdomains from VirusTotal intelligence
-* **SecurityTrails** – Retrieves historical and current subdomain data
-* **TLS BufferOver** – Uses DNS and TLS scan data
-* **ThreatCrowd** – Pulls subdomains from threat intelligence reports
+- Python 3.9+
+- `requests`
 
-### Key features
+Install the dependency:
 
-* Aggregates results from **multiple APIs** in one run
-* Removes duplicates using Python sets
-* Handles network/API errors gracefully
-* Outputs results in a simple, readable format
-* Easy to extend with additional sources
+```bash
+pip install requests
+```
 
-### Use cases
+## Setup
 
-* Attack surface mapping
-* Bug bounty reconnaissance
-* OSINT investigations
-* Academic cybersecurity research
-* Learning how threat-intelligence APIs work
+Get free API keys from whichever paid sources you want to use, then export
+them as environment variables (never hardcode keys in the script):
 
-### Requirements
+```bash
+export OTX_API_KEY="your_otx_key"
+export VT_API_KEY="your_virustotal_key"
+export SECURITYTRAILS_API_KEY="your_securitytrails_key"
+```
 
-* Python 3
-* `requests` library
-* API keys for some services (VirusTotal, OTX, SecurityTrails, BufferOver)
+## Usage
 
-### Important note
+Interactive mode (prompts for a domain):
 
-This tool is intended for **ethical and legal security testing only**. Always ensure you have proper authorization before scanning or collecting information about a domain.
+```bash
+python subdomain_tool.py
+```
+
+Direct mode:
+
+```bash
+python subdomain_tool.py example.com
+```
+
+Save results to a file:
+
+```bash
+python subdomain_tool.py example.com -o results.txt
+```
+
+Tune request timeout and concurrency:
+
+```bash
+python subdomain_tool.py example.com --timeout 15 --workers 6
+```
+
+### CLI options
+
+| Flag | Description | Default |
+|---|---|---|
+| `domain` | Target domain (positional, optional — prompted if omitted) | — |
+| `-o`, `--output` | File to write the sorted subdomain list to | none (prints only) |
+| `--timeout` | Per-request timeout in seconds | `10` |
+| `--workers` | Number of sources queried concurrently | `6` |
+
+## How it works
+
+1. Each source module (`source_crtsh`, `source_otx`, etc.) sends one HTTP
+   request and normalizes its response into a set of lowercase hostnames.
+2. All six sources are dispatched concurrently with a
+   `ThreadPoolExecutor`, so a slow or unresponsive API doesn't block the
+   others.
+3. Each source is wrapped in its own error handling — a failed request,
+   timeout, missing key, or malformed JSON response from one source is
+   logged to stderr and simply excluded, rather than crashing the run.
+4. Results from every source are merged into a single deduplicated set and
+   printed sorted, optionally also written to a file.
+
+## Notes
+
+- This tool only queries third-party public data sources — it does not scan
+  or send traffic to the target domain itself.
+- Free tiers of VirusTotal, SecurityTrails, and OTX are rate-limited; heavy
+  use may return errors, which the tool will report but not crash on.
+- Use responsibly and only against domains you're authorized to assess.
